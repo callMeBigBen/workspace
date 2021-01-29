@@ -28,8 +28,18 @@ void const_cast_test(){
     std::cout<<a<<std::endl;
 }
 
+template <typename T>
+void ChangeVal(T v){
+    std::cout<<"before: v"<<v<<std::endl;
+    v ++;
+    std::cout<<"after: v"<<v<<std::endl;
+}
+
 int main(){
-    // int i = 1;
-    // std::cout<<foo<std::string>(i)<<std::endl;
-    const_cast_test();
+    int a = 5;
+    int& b = a;
+    int* c = &a;
+    // ChangeVal(b);
+    ChangeVal(c);
+    std::cout<<a<<std::endl;
 }
