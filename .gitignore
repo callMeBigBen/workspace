@@ -2,3 +2,11 @@
 *vscode
 *.out
 test
+*blade*
+blade/
+*BLADE*
+build*
+README
+.bundle
+cpp3rdlib
+.Building.lock

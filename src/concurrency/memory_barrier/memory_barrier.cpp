@@ -20,12 +20,12 @@ void bar(void){
     // assert(a.load()==1);
 }
 
-int main(){
-    while(true){
-        std::thread t1(bar);
-        std::thread t2(foo);
-        t1.join();
-        t2.join();
-        std::cout<<"test done"<<std::endl;
-    }
-}
+// int main(){
+//     while(true){
+//         std::thread t1(bar);
+//         std::thread t2(foo);
+//         t1.join();
+//         t2.join();
+//         std::cout<<"test done"<<std::endl;
+//     }
+// }

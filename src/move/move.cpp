@@ -13,11 +13,11 @@ public:
     std::vector<int> v;
 };
 
-int main(){
-    SomethingMovable sm1;
-    sm1.s = "abc";
-    sm1.v.push_back(1);
-    auto sm2 = std::move(sm1);
-    std::cout<<sm2.s<<std::endl;
-    std::cout<<sm1.s<<std::endl;
-}
+// int main(){
+//     SomethingMovable sm1;
+//     sm1.s = "abc";
+//     sm1.v.push_back(1);
+//     auto sm2 = std::move(sm1);
+//     std::cout<<sm2.s<<std::endl;
+//     std::cout<<sm1.s<<std::endl;
+// }

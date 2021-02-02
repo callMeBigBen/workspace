@@ -27,8 +27,8 @@ void foo(){
     ThreadRAII t_raii(std::move(t));
     std::cout<<"at exit"<<std::endl;
 }
-int main(){
-    foo();
-    std::cout<<"final"<<std::endl;
+// int main(){
+//     foo();
+//     std::cout<<"final"<<std::endl;
 
-}
+// }

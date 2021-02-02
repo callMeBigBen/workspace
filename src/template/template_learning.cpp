@@ -35,11 +35,11 @@ void ChangeVal(T v){
     std::cout<<"after: v"<<v<<std::endl;
 }
 
-int main(){
-    int a = 5;
-    int& b = a;
-    int* c = &a;
-    // ChangeVal(b);
-    ChangeVal(c);
-    std::cout<<a<<std::endl;
-}
+// int main(){
+//     int a = 5;
+//     int& b = a;
+//     int* c = &a;
+//     // ChangeVal(b);
+//     ChangeVal(c);
+//     std::cout<<a<<std::endl;
+// }
