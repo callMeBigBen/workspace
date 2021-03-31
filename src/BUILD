@@ -1,5 +1,6 @@
 source_dirs = [
     ".",
+    "wheels/"
     #"./code_practice/",
     #"./concurrency/",
     #"./move/",
@@ -11,11 +12,18 @@ source_dirs = [
     #".",
 ]
 
-OPTIMIZE = ["-DARCHON", "-Ofast", "-fopenmp", "-g", "-Wall", "-Wextra", "-Werror", "-Wno-sign-compare"]
+common_cppflags = [
+    "-std=c++14",
+    "-g",
+    "-O0"
+]
+
 
 dep_libs = [
     #"cpp3rdlib/folly:v2018.08.20.00@//cpp3rdlib/folly:folly",
-    "cpputil/common:1.0.0@//cpputil/common:common_utils",
+    #"cpputil/common:1.0.0@//cpputil/common:common_utils",
+    #"cpputil/pool:1.1.2@//cpputil/pool:pool",
+    "#pthread",
 ]
 
 cc_binary(
@@ -24,5 +32,5 @@ cc_binary(
     deps=dep_libs,
     incs=source_dirs,
     bundle_path="./bundle/",
-    optimize=OPTIMIZE
+    extra_cppflags=common_cppflags
 )
