@@ -9,7 +9,6 @@ static std::mutex task_mut;
 static std::atomic<bool> stopped;
 static int created_worker;
 static std::atomic<int> finished_jobs;
-static std::unordered_set<int> set;
 
 template <typename Task>
 class ThreadPool
@@ -19,33 +18,32 @@ public:
     {
         this->worker_num = worker_num;
         // this->task_num = 0;
-        this->sprites_.reserve(worker_num);
+        this->sprites_.resize(worker_num);
         this->idx.store(-1);
         this->max_cap = max_cap;
         this->tasks_.resize(max_cap);
-        this->flags_ = std::vector<std::atomic<bool>>(max_cap);
+        flags_ = std::vector<std::atomic<bool>>(max_cap);
         for (int i = 0; i < max_cap; i++)
         {
-            // this->flags_.push_back(std::atomic<bool>());
-            this->flags_[i].store(false);
+            // flags_.push_back(std::atomic<bool>());
+            flags_[i].store(false);
         }
         stopped.store(false);
         created_worker = 0;
         finished_jobs.store(0);
-        set = std::unordered_set<int>();
         // now set those tiny sprites free
+        // sprites_ = std::vector<std::thread>(worker_num, )
         for (int i = 0; i < worker_num; i++)
         {
-            sprites_[i] = std::move(std::thread(std::bind(spawn_sprite, this)));
+            auto&& t = std::thread(std::bind(spawn_sprite, this));
+            sprites_[i] = std::move(t);
             // sprites_[i].detach();
             created_worker++;
             // std::cout << "worker no." << created_worker << " create done" << std::endl;
         }
+        std::cout<<"size of sprites:"<<sprites_.size()<<std::endl;
     }
-    ~ThreadPool()
-    {
-        stop();
-    }
+    ~ThreadPool() = default;
 
     void async_enqueue(Task &&r)
     {
@@ -60,14 +58,13 @@ public:
 
     static void spawn_sprite(ThreadPool *thread_pool)
     {
-        while (true)
+        while (!stopped.load())
         {
-            if (stopped.load())
-                break;
-            while (thread_pool->idx.load() < 0)
+            if (thread_pool->idx.load() < 0)
             {
                 // std::cout << "sleep of spawn_sprite" << std::endl;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                continue;
             }
             {
                 // std::lock_guard<std::mutex> l(task_mut);
@@ -78,11 +75,7 @@ public:
                 while (!thread_pool->flags_[c_idx+1].load())
                     continue;
                 one_job = &thread_pool->tasks_[c_idx+1];
-                std::cout<<"job index:"<<c_idx+1<<std::endl;
-                if(set.count(c_idx+1) > 0){
-                    std::cout<<"found dup!"<<std::endl;
-                }
-                set.insert(c_idx+1);
+                // std::cout<<"job index:"<<c_idx+1<<std::endl;
                 (*one_job)();
                 thread_pool->flags_[c_idx+1].store(false);
                 // thread_pool->tasks_.pop_back();
@@ -90,21 +83,27 @@ public:
             finished_jobs.fetch_add(1);
             // std::cout << finished_jobs.load() << " do job once :" << std::endl;
         }
+        std::cout<<"sprite break"<<std::endl;
     }
 
     void stop()
     {
         stopped.store(true);
+        std::cout<<"finished jobs:"<<finished_jobs.load()<<std::endl;
+        std::cout<<"size of sprites when stop:"<<sprites_.size()<<std::endl;
         for (auto &t : sprites_)
         {
             t.join();
+            std::cout<<"sprite fly away"<<std::endl;
         }
+        tasks_.clear();
+        std::cout<<"task cleared"<<std::endl;
     }
 
 private:
     std::vector<std::thread> sprites_;
-    std::vector<Task> tasks_;
     std::vector<std::atomic<bool>> flags_;
+    std::vector<Task> tasks_;
     int worker_num;
     // int task_num;
     int max_cap;

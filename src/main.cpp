@@ -28,9 +28,12 @@ int main()
     for (int i = 0; i < 1000; i++)
     {
         auto&& func = [](int i)->void{
-            // std::cout<<"hello, "<<i<<std::endl;
+            std::cout<<"hello, "<<i<<std::endl;
         };
         thread_pool.async_enqueue(std::move(std::bind(func, i)));
     }
+    std::cout<<"all jobs enqueued"<<std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    thread_pool.stop();
     return 1;
 }
