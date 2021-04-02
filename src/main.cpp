@@ -5,13 +5,15 @@
 #include <functional>
 // #include "wheels/asyncer/asyncer.h"
 #include "wheels/thread_pool/thread_pool.h"
-#include <cpputil/pool/thread_pool.h>
+// #include <cpputil/pool/thread_pool.h>
 
 using TaskFunc = std::function<void()>;
 
 int main()
 {
-    ThreadPool<TaskFunc> thread_pool(10, 100);
+    auto task_size = 100;
+    auto thread_size = 10;
+    ThreadPool<TaskFunc> thread_pool(thread_size, task_size);
     // cpputil::pool::ThreadPool thread_pool(10, "", 100);
     // std::cout<<"init finished"<<std::endl;
     // std::vector<folly::Future<int>> future_vec;
@@ -27,31 +29,46 @@ int main()
     //     std::move(fut).get();
     //     std::cout<<"fut done"<<std::endl;
     // }
+
+    // test case 1: vector assign
+    /*
     auto vec = std::vector<int>();
-    for (int i = 0; i < 100; i++){
+    for (int i = 0; i < task_size; i++){
         vec.push_back(10000);
     }
-    auto func = [](int i, auto& vec)->void{
-        std::ostringstream out;  
-        out<<"in func, i:"<<i<<std::endl;
-        std::cout<<out.str();
+    auto func = [&](int i)->void{
+        if(vec[i] == i){
+            std::cout<<"oh my gush!"<<std::endl;
+        }
         vec[i] = i;
     };
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < task_size; i++)
     {
-        // auto&& task = std::bind(func, i, vec);
-        // thread_pool.async_enqueue(std::move(task));
-        auto task = std::bind(func, i, std::ref(vec));
+        auto task = std::bind(func, i);
         while(true) {
             if(thread_pool.async_enqueue(task)){
                 break;
             }
         } 
     }
+    */
+   
+    // tese case 2: long-time attack
+    // failed
+    auto name = "shawn";
+    auto func = [&]()->void{
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::cout<<name<<std::endl;
+    };
+    for(int i = 0;i < 2000; i++){
+        while(true) {
+            if(thread_pool.async_enqueue(func)){
+                break;
+            }
+        } 
+    }
+    
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
     thread_pool.stop();
-    for(auto& i : vec){
-        std::cout<<i<<std::endl;
-    }
     return 1;
 }

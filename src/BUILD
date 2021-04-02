@@ -22,7 +22,7 @@ common_cppflags = [
 dep_libs = [
     #"cpp3rdlib/folly:v2018.08.20.00@//cpp3rdlib/folly:folly",
     #"cpputil/common:1.0.0@//cpputil/common:common_utils",
-    "cpputil/pool:1.1.2@//cpputil/pool:pool",
+    #"cpputil/pool:1.1.2@//cpputil/pool:pool",
     "#pthread",
 ]
 
