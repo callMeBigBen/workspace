@@ -31,7 +31,7 @@ int main()
     // }
 
     // test case 1: vector assign
-    /*
+    
     auto vec = std::vector<int>();
     for (int i = 0; i < task_size; i++){
         vec.push_back(10000);
@@ -40,6 +40,7 @@ int main()
         if(vec[i] == i){
             std::cout<<"oh my gush!"<<std::endl;
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         vec[i] = i;
     };
     for (int i = 0; i < task_size; i++)
@@ -51,10 +52,11 @@ int main()
             }
         } 
     }
-    */
+    
    
     // tese case 2: long-time attack
     // failed
+    /*
     auto name = "shawn";
     auto func = [&]()->void{
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -67,8 +69,12 @@ int main()
             }
         } 
     }
-    
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    */
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
     thread_pool.stop();
+    for(auto& num : vec){
+        std::cout<<num<<std::endl;
+    }
     return 1;
 }

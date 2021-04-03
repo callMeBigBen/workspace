@@ -50,12 +50,12 @@ public:
         // dispatch jobs to those cuties sprites.
         std::lock_guard<std::mutex> lock(task_mut);
         auto p_idx = idx.fetch_add(1); 
-        while(!this->flags_[p_idx+1].load()){
-            std::this_thread::sleep_for(std::chrono::microseconds(10));
-            continue;
-        }
+        // while(!this->flags_[p_idx+1].load()){
+        //     std::this_thread::sleep_for(std::chrono::microseconds(10));
+        //     continue;
+        // }
         tasks_[p_idx+1] = std::forward<Task &&>(r);
-        this->flags_[p_idx+1].store(false);
+        // this->flags_[p_idx+1].store(false);
         return true;
     }
 
@@ -63,7 +63,7 @@ public:
     {
         while (!stopped.load())
         {
-            Task *one_job; // easily trigger anomaly, cautious!
+            Task one_job; // easily trigger anomaly, cautious!
             int c_idx;
             {
                 // double check before entering critical section, in order to avoid race condition
@@ -78,10 +78,10 @@ public:
                 }
                 // this tiny sprite got a real job.
                 c_idx = thread_pool->idx.fetch_sub(1);  
-                one_job = &thread_pool->tasks_[c_idx];
+                one_job = thread_pool->tasks_[c_idx];
             }
-            (*one_job)(); // do job without holding the mutex
-            thread_pool->flags_[c_idx].store(true);
+            one_job(); // do job without holding the mutex
+            // thread_pool->flags_[c_idx].store(true);
             finished_jobs.fetch_add(1);
         }
     }
