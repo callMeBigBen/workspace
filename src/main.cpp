@@ -1,5 +1,6 @@
 // #include "future/future_test.h"
 #include <iostream>
+#include <atomic>
 
 class Base {
 public:
@@ -25,7 +26,6 @@ public:
 };
 
 int main(){
-    Printer<Base> p;
-    p.do_print();
-    return 1;
+    std::atomic<int> a(3);
+    std::cout<<a.fetch_add(1)<<std::endl;
 }
