@@ -6,6 +6,7 @@
 // #include "wheels/asyncer/asyncer.h"
 #include "wheels/thread_pool/thread_pool.h"
 // #include <cpputil/pool/thread_pool.h>
+#include <atomic>
 
 using TaskFunc = std::function<void()>;
 
