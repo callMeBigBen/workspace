@@ -23,6 +23,10 @@ public:
         this->idx.store(-1);
         this->max_cap = max_cap;
         this->tasks_.resize(max_cap);
+        this->flags_ = std::vector<std::atomic<bool>>(max_cap);
+        for(auto& flag: this->flags_){
+            flag.store(true);
+        }
         stopped.store(false);
         created_worker = 0;
         finished_jobs.store(0);
@@ -45,8 +49,13 @@ public:
         }
         // dispatch jobs to those cuties sprites.
         std::lock_guard<std::mutex> lock(task_mut);
-        auto p_idx = idx.fetch_add(1);
+        auto p_idx = idx.fetch_add(1); 
+        // while(!this->flags_[p_idx+1].load()){
+        //     std::this_thread::sleep_for(std::chrono::microseconds(10));
+        //     continue;
+        // }
         tasks_[p_idx+1] = std::forward<Task &&>(r);
+        // this->flags_[p_idx+1].store(false);
         return true;
     }
 
@@ -54,7 +63,8 @@ public:
     {
         while (!stopped.load())
         {
-            Task *one_job;
+            Task one_job; // easily trigger anomaly, cautious!
+            int c_idx;
             {
                 // double check before entering critical section, in order to avoid race condition
                 if(thread_pool->idx.load() < 0){
@@ -67,10 +77,11 @@ public:
                     continue;
                 }
                 // this tiny sprite got a real job.
-                auto c_idx = thread_pool->idx.fetch_sub(1);  
-                one_job = &thread_pool->tasks_[c_idx];
+                c_idx = thread_pool->idx.fetch_sub(1);  
+                one_job = thread_pool->tasks_[c_idx];
             }
-            (*one_job)(); // do job without holding the mutex
+            one_job(); // do job without holding the mutex
+            // thread_pool->flags_[c_idx].store(true);
             finished_jobs.fetch_add(1);
         }
     }
@@ -88,8 +99,8 @@ public:
 
 private:
     std::vector<std::thread> sprites_;
-    std::vector<std::atomic<bool>> flags_;
     std::vector<Task> tasks_;
+    std::vector<std::atomic<bool>> flags_; // whether the slot has been consumed
     int worker_num;
     int max_cap;
     std::atomic<int> idx;
