@@ -12,8 +12,8 @@ using TaskFunc = std::function<void()>;
 
 int main()
 {
-    auto task_size = 100;
-    auto thread_size = 10;
+    size_t task_size = 100;
+    size_t thread_size = 10;
     ThreadPool<TaskFunc> thread_pool(thread_size, task_size);
     // cpputil::pool::ThreadPool thread_pool(10, "", 100);
     // std::cout<<"init finished"<<std::endl;
