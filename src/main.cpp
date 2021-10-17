@@ -3,67 +3,53 @@
 #include <thread>
 #include <vector>
 #include <functional>
+#include <unordered_map>
 // #include "wheels/asyncer/asyncer.h"
 #include "wheels/thread_pool/thread_pool.h"
 // #include <cpputil/pool/thread_pool.h>
 #include <atomic>
 
 using TaskFunc = std::function<void()>;
+using namespace std::chrono;
 
 int main()
 {
-    size_t task_size = 100;
-    size_t thread_size = 10;
-    ThreadPool<TaskFunc> thread_pool(thread_size, task_size);
-    // cpputil::pool::ThreadPool thread_pool(10, "", 100);
-    // std::cout<<"init finished"<<std::endl;
-    // std::vector<folly::Future<int>> future_vec;
-    // auto lamb = [](int a, int b, int c) -> void {
-    //     std::this_thread::sleep_for(std::chrono::seconds(c));
-    //     std::cout << "hello " << std::to_string(a) << " " << std::to_string(b) << std::endl;
-    // };
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     future_vec.push_back(std::move(asyncer(lamb, i, i + 1, i+2)));
-    // }
-    // for(auto& fut : future_vec){
-    //     std::move(fut).get();
-    //     std::cout<<"fut done"<<std::endl;
-    // }
+    size_t task_size = 10000;
+    size_t thread_num = 64;
+    size_t buffer_size = 256;
+    ThreadPool<TaskFunc> thread_pool(thread_num, buffer_size);
+    milliseconds start_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
     // test case 1: vector assign
     
     auto vec = std::vector<int>();
     for (int i = 0; i < task_size; i++){
-        vec.push_back(10000);
+        vec.push_back(2000000);
     }
+    unordered_map<int, atomic<int>> mp;
+    mp.reserve(task_size*2);
+    cout<<"vec size:"<<vec.size()<<endl;
     auto func = [&](int i)->void{
-        if(vec[i] == i){
-            std::cout<<"oh my gush!"<<std::endl;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        mp[i].fetch_add(1);
         vec[i] = i;
     };
     for (int i = 0; i < task_size; i++)
     {
         auto task = std::bind(func, i);
-        while(true) {
-            if(thread_pool.async_enqueue(task)){
-                break;
-            }
-        } 
+        while(!thread_pool.async_enqueue(task)) {} 
     }
+    
     
    
     // tese case 2: long-time attack
-    // failed
     /*
     auto name = "shawn";
     auto func = [&]()->void{
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        std::cout<<name<<std::endl;
+        // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        printf("name:%s\n", name);
     };
-    for(int i = 0;i < 2000; i++){
+    for(int i = 0;i < task_size; i++){
         while(true) {
             if(thread_pool.async_enqueue(func)){
                 break;
@@ -71,11 +57,16 @@ int main()
         } 
     }
     */
+    
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     thread_pool.stop();
     for(auto& num : vec){
         std::cout<<num<<std::endl;
     }
+    for(auto& p : mp)
+        printf("%d:%d\n",p.first, p.second.load());
+    milliseconds end_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+    printf("total time ms: %ld", end_ms - start_ms);
     return 1;
 }
